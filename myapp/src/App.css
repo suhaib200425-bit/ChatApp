@@ -1,0 +1,15 @@
+* {
+  margin: 0px;
+  padding: 0px;
+}
+
+.App {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-image: url('https://i.pinimg.com/736x/41/87/58/418758deb14512c39bff1d44446b89ac.jpg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}

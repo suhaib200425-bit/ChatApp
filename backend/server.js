@@ -7,11 +7,15 @@ dotenv.config();
 const app = express();
 
 app.use(express.json());
-app.use(cors({
-  origin: "*",
-  credentials: true
-}));
+const allowedOrigins = [
+    "http://localhost:5173",
+    "https://your-frontend.vercel.app"
+];
 
+app.use(cors({
+    origin: allowedOrigins,
+    credentials: true
+}));
 // DATABASE CONNECTION
 connectDB()
 
@@ -19,7 +23,7 @@ app.get("/", (req, res) => {
     res.send("API Running...");
 });
 
-app.use("/api/user",require('./routes/userRouters'))
+app.use("/api/user", require('./routes/userRouters'))
 
 const PORT = process.env.PORT || 5000;
 

@@ -7,14 +7,8 @@ dotenv.config();
 const app = express();
 
 app.use(express.json());
-const allowedOrigins = [
-    "http://localhost:5173",
-    "https://your-frontend.vercel.app"
-];
-
 app.use(cors({
-    origin: allowedOrigins,
-    credentials: true
+  origin: "*",
 }));
 // DATABASE CONNECTION
 connectDB()

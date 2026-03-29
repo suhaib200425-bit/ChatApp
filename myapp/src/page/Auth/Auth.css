@@ -135,3 +135,12 @@
   border-color: #8b5cf6;
   box-shadow: 0 0 10px #8b5cf6;
 }
+
+@media (max-width: 576px) {
+   .left{
+    display: none;
+   }
+   .container{
+    width: 100%;
+   }
+}

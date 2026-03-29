@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "./UserMedia.css";
 import { users } from "../../assets/assets";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useChatContext } from "../../context/ChatContext";
 
 const mediaImages = [
   "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300&auto=format&fit=crop&q=60",
@@ -12,6 +13,8 @@ const UserMedia = ({ selectedUser }) => {
 
   const [mediaUser, setMediaUser] = useState({})
   const { userId } = useParams()
+  const {setUser} =useChatContext()
+  const  Navigate= useNavigate()
   useEffect(() => {
           console.log('userId'+userId);
     const user = users.filter(user => user._id == userId)
@@ -53,7 +56,12 @@ const UserMedia = ({ selectedUser }) => {
         </div>
       </div>
 
-      <button className="logout-btn">Logout</button>
+      <button className="logout-btn"
+      onClick={()=>{
+        localStorage.setItem('token',0)
+        setUser({})
+        Navigate('/auth')
+      }}>Logout</button>
     </div>
   );
 };

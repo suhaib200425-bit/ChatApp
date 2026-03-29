@@ -1,16 +1,18 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./Auth.css";
 import { toast } from "react-toastify";
 import axios from "axios"
 import { BACKENDURL } from "../../assets/assets";
 import { useChatContext } from "../../context/ChatContext";
+import { useNavigate } from "react-router-dom";
 export default function SignupPage() {
     const [OTPScreen, setOTPScreen] = useState(false)
     const [userName, setUserName] = useState('')
     const [email, setEmail] = useState('')
-    const {user,setUser}=useChatContext()
+    const { user, setUser } = useChatContext()
     const [OTP, setOTP] = useState('')
     const [Page, setPage] = useState('Login')
+    const Navigate=useNavigate()
     const handleSubmit = async (e) => {
         e.preventDefault()
         if ((Page == 'Login' ? userName : userName && email) && !OTPScreen) {
@@ -20,7 +22,7 @@ export default function SignupPage() {
                     `${BACKENDURL}/api/user/registered-otp`,
                     {
                         email: email,
-                        username:userName
+                        username: userName
                     }
                 )
             } else {
@@ -52,8 +54,13 @@ export default function SignupPage() {
                     )
                     console.log('LOGING RESPONSE');
                     console.log(response.data);
-                    setUser(response.data.user)
-                    localStorage.setItem('token',response.data.token)
+                    if (response.data.status) {
+                        setUser(response.data.user)
+                        localStorage.setItem('token', response.data.token)
+                        Navigate('/home')
+                    }else{
+                        toast.error(response.data.message)
+                    }
                 }
                 if (Page == 'Register') {
                     const response = await axios.post(
@@ -61,12 +68,21 @@ export default function SignupPage() {
                         {
                             otp: OTP,
                             email: email,
-                            username:userName
+                            username: userName
                         }
                     )
                     console.log('REGISTER RESPONSE');
                     console.log(response.data);
+                    if(response.data.status){
+                        setPage('Login')
+                    setOTPScreen(false)
+                    setOTP('')
+                    }else{
+                        
+                        toast.error(response.data.message)
+                    }
                 }
+
             } else {
                 toast.error('Enter the OTP')
             }
@@ -90,7 +106,7 @@ export default function SignupPage() {
                     <h2>{Page == 'Login' ? 'Login' : 'Sign up'}</h2>
 
                     <div className="">
-                        <input type="text" className="col-12 mb-2" placeholder="UserName " disabled={OTPScreen?true:false} onChange={(e) => {
+                        <input type="text" className="col-12 mb-2" placeholder="UserName " disabled={OTPScreen ? true : false} onChange={(e) => {
                             setUserName(e.target.value)
                         }} />
                         {Page == 'Register' && <input type="email" className="col-12 mb-2" placeholder="Email Address"
@@ -98,7 +114,7 @@ export default function SignupPage() {
                                 setEmail(e.target.value)
                             }} />}
 
-                        {OTPScreen && <OTPInput setOTP={setOTP} />}
+                        {OTPScreen && <OTPInput setOTP={setOTP} OTPScreen={OTPScreen} />}
                         <button type="submit" className="col-12 mb-2" onSubmit={handleSubmit} >{
                             OTPScreen ?
                                 Page == 'Login' ?
@@ -140,7 +156,7 @@ export default function SignupPage() {
 /* ================= OTP INPUT ================= */
 
 
-function OTPInput({ setOTP }) {
+function OTPInput({ setOTP, OTPScreen }) {
 
     const [otp, setOtp] = useState(["", "", "", ""]);
     const inputRefs = useRef([]);
@@ -182,6 +198,10 @@ function OTPInput({ setOTP }) {
             }
         }
     };
+
+    useEffect(() => {
+        inputRefs.current[0].focus()
+    }, [OTPScreen])
 
     return (
         <div className="otp-container mb-2">

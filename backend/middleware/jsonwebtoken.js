@@ -13,8 +13,11 @@ function authenticateToken(req, res, next) {
         message: 'Token Is Not Found'
     });
 
-    jwt.verify(token,process.env.JWT_TOKEN , (err, user) => {
-        if (err) return res.sendStatus(403);
+    jwt.verify(token, process.env.JWT_TOKEN, (err, user) => {
+        if (err) return res.json({
+            status: false,
+            message: 'Token Is Not Found'
+        });
 
         req.user = user;
         next();

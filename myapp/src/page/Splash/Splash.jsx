@@ -10,7 +10,7 @@ function Splash() {
   const Navigate = useNavigate()
   useEffect(() => {
     async function getUser() {
-      const token =await localStorage.getItem('token')
+      const token = localStorage.getItem('token')
       const response = await axios.get(`${BACKENDURL}/api/user/check-loged`, {
         headers: {
           Authorization: `Bearer ${token}`

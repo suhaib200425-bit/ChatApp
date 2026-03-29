@@ -12,6 +12,7 @@ const checkLoged = async (req, res) => {
         }
         res.json({
             status: true,
+            user:user,
             message: "user already loged"
         })
     } catch (err) {

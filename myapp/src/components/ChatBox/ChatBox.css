@@ -4,8 +4,13 @@
   display: flex;
   flex-direction: column;
 }
-
+.ChatUser .Icon{
+  margin-right: 10px;
+  color: rgba(255, 255, 255, 0.619);
+  font-size: 30px;
+}
 .ChatBox .ChatUser {
+  
   width: 100%;
   display: flex;
   align-items: center;
@@ -159,7 +164,7 @@
 
 @media (max-width: 576px) {
   .ChatBox {
-    height: 100vh;
+    height: 100dvh;
     width: 100%;
     padding: 5px;
   }

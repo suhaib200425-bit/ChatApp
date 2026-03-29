@@ -1,24 +1,26 @@
 import React, { useState } from 'react'
 import { FiImage, FiSend } from "react-icons/fi";
+import { FaEdit } from "react-icons/fa";
 import './ChatBox.css'
 import { useEffect } from 'react';
 import { users } from '../../assets/assets';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 function ChatBox({ selectedUser }) {
     const [chatUser, setChatUser] = useState({})
     const { userId } = useParams()
+    const Navigate = useNavigate()
     useEffect(() => {
-        console.log('userId'+userId);
-        
+        console.log('userId' + userId);
+
         const user = users.filter(user => user._id == userId)
-    console.log(user);
+        console.log(user);
         if (userId) {
             setChatUser(user[0])
         } else {
             setChatUser(selectedUser)
         }
 
-    }, [selectedUser,userId])
+    }, [selectedUser, userId])
 
     const messages = [
         {
@@ -121,7 +123,11 @@ function ChatBox({ selectedUser }) {
                         <h5><strong>{chatUser.name}</strong></h5>
                     </div>
                     <div className="Icon">
-
+                        {
+                            <FaEdit onClick={() => {
+                                Navigate('/edit')
+                            }} />
+                        }
                     </div>
                 </div>
             }

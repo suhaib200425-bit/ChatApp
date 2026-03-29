@@ -1,12 +1,76 @@
 import React, { useState, useRef } from "react";
 import "./Auth.css";
-
+import { toast } from "react-toastify";
+import axios from "axios"
+import { BACKENDURL } from "../../assets/assets";
+import { useChatContext } from "../../context/ChatContext";
 export default function SignupPage() {
     const [OTPScreen, setOTPScreen] = useState(false)
+    const [userName, setUserName] = useState('')
+    const [email, setEmail] = useState('')
+    const {user,setUser}=useChatContext()
+    const [OTP, setOTP] = useState('')
     const [Page, setPage] = useState('Login')
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
-        setOTPScreen(prev => !prev)
+        if ((Page == 'Login' ? userName : userName && email) && !OTPScreen) {
+            let response
+            if (Page == 'Register') {
+                response = await axios.post(
+                    `${BACKENDURL}/api/user/registered-otp`,
+                    {
+                        email: email,
+                        username:userName
+                    }
+                )
+            } else {
+                response = await axios.post(
+                    `${BACKENDURL}/api/user/loged-otp`,
+                    {
+                        username: userName
+                    }
+                )
+            }
+
+            console.log('response');
+            console.log(response.data);
+            if (response.data.status) {
+                toast.info(response.data.message)
+                setOTPScreen(true)
+            } else {
+                toast.error(response.data.message)
+            }
+        } else {
+            if (OTP.length >= 4) {
+                if (Page == 'Login') {
+                    const response = await axios.post(
+                        `${BACKENDURL}/api/user/loged-verify`,
+                        {
+                            otp: OTP,
+                            username: userName
+                        }
+                    )
+                    console.log('LOGING RESPONSE');
+                    console.log(response.data);
+                    setUser(response.data.user)
+                    localStorage.setItem('token',response.data.token)
+                }
+                if (Page == 'Register') {
+                    const response = await axios.post(
+                        `${BACKENDURL}/api/user/registered-verify`,
+                        {
+                            otp: OTP,
+                            email: email,
+                            username:userName
+                        }
+                    )
+                    console.log('REGISTER RESPONSE');
+                    console.log(response.data);
+                }
+            } else {
+                toast.error('Enter the OTP')
+            }
+        }
     }
     return (
         <div className="container">
@@ -26,10 +90,15 @@ export default function SignupPage() {
                     <h2>{Page == 'Login' ? 'Login' : 'Sign up'}</h2>
 
                     <div className="">
-                        <input type="text" className="col-12 mb-2" placeholder="UserName " />
-                        {Page == 'Register' && <input type="email" className="col-12 mb-2" placeholder="Email Address" />}
+                        <input type="text" className="col-12 mb-2" placeholder="UserName " disabled={OTPScreen?true:false} onChange={(e) => {
+                            setUserName(e.target.value)
+                        }} />
+                        {Page == 'Register' && <input type="email" className="col-12 mb-2" placeholder="Email Address"
+                            onChange={(e) => {
+                                setEmail(e.target.value)
+                            }} />}
 
-                        {OTPScreen && <OTPInput />}
+                        {OTPScreen && <OTPInput setOTP={setOTP} />}
                         <button type="submit" className="col-12 mb-2" onSubmit={handleSubmit} >{
                             OTPScreen ?
                                 Page == 'Login' ?
@@ -70,46 +139,62 @@ export default function SignupPage() {
 /* styles.css */
 /* ================= OTP INPUT ================= */
 
-function OTPInput() {
-    const inputs = Array(4).fill(0);
+
+function OTPInput({ setOTP }) {
+
+    const [otp, setOtp] = useState(["", "", "", ""]);
     const inputRefs = useRef([]);
 
     const handleChange = (e, index) => {
         const value = e.target.value;
+        if (!/^[a-zA-Z0-9]*$/.test(value)) return;
 
-        // Allow only digits
-        if (!/^\d?$/.test(value)) return;
+        const newOtp = [...otp];
+        newOtp[index] = value;
 
-        e.target.value = value;
+        setOtp(newOtp);
+        setOTP(newOtp.join(""));
 
-        // Move to next input
-        if (value && index < inputRefs.current.length - 1) {
+        if (value && index < 3) {
             inputRefs.current[index + 1].focus();
         }
     };
 
     const handleKeyDown = (e, index) => {
-        // Backspace logic
+
         if (e.key === "Backspace") {
-            if (e.target.value === "" && index > 0) {
+
+            const newOtp = [...otp];
+
+            // remove current value
+            if (newOtp[index]) {
+                newOtp[index] = "";
+                setOtp(newOtp);
+                setOTP(newOtp.join(""));
+            }
+            // move to previous box
+            else if (index > 0) {
                 inputRefs.current[index - 1].focus();
-            } else {
-                e.target.value = "";
+
+                newOtp[index - 1] = "";
+                setOtp(newOtp);
+                setOTP(newOtp.join(""));
             }
         }
     };
 
-
     return (
         <div className="otp-container mb-2">
             <h5>Enter The Otp</h5>
+
             <div className="otp-boxs">
-                {inputs.map((_, index) => (
+                {otp.map((digit, index) => (
                     <input
                         key={index}
                         type="text"
                         maxLength="1"
                         className="otp-box"
+                        value={digit}
                         ref={(el) => (inputRefs.current[index] = el)}
                         onChange={(e) => handleChange(e, index)}
                         onKeyDown={(e) => handleKeyDown(e, index)}
@@ -119,5 +204,6 @@ function OTPInput() {
         </div>
     );
 }
+
 
 /* OTP CSS */

@@ -1,4 +1,5 @@
-export const BACKENDURL="http://localhost:5000"
+// export const BACKENDURL="http://localhost:5000"
+export const BACKENDURL="https://chat-app-4se5.vercel.app"
 export const users = [
 
         {

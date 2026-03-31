@@ -3,115 +3,83 @@ import { FiImage, FiSend } from "react-icons/fi";
 import { FaEdit } from "react-icons/fa";
 import './ChatBox.css'
 import { useEffect } from 'react';
-import { users } from '../../assets/assets';
+import { BACKENDURL, users } from '../../assets/assets';
 import { useNavigate, useParams } from 'react-router-dom';
-function ChatBox({ selectedUser }) {
+import { useChatContext } from '../../context/ChatContext';
+import axios from 'axios';
+function ChatBox() {
     const [chatUser, setChatUser] = useState({})
+    const [messageType, setMessageType] = useState('text')
+    const [messages, setMessages] = useState([])
+    const [message, setMessage] = useState("")
     const { userId } = useParams()
-    const Navigate = useNavigate()
-    useEffect(() => {
-        console.log('userId' + userId);
+    const { selectedUser } = useChatContext()
 
-        const user = users.filter(user => user._id == userId)
-        console.log(user);
+    const Navigate = useNavigate()
+    const token = localStorage.getItem('token')
+    useEffect(() => {
+        const getProfile = async () => {
+            const response = await axios.get(`${BACKENDURL}/api/user/profile/${userId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            if (response.data.status) {
+                setChatUser(response.data.user)
+            }
+        }
+        const getMessage = async (id) => {
+            if (id) {
+                const response = await axios.get(`${BACKENDURL}/api/message/user/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                })
+                console.log('MESSAGE');
+                console.log(response.data);
+                console.log('MESSAGE END');
+
+
+                if (response.data.status) {
+                    // setChatUser(response.data.user)
+                    setMessages(response.data.messages)
+                }
+            }
+        }
         if (userId) {
-            setChatUser(user[0])
-        } else {
+            getProfile()
+            getMessage(userId)
+        }
+        if (selectedUser != {}) {
             setChatUser(selectedUser)
+            getMessage(selectedUser._id)
         }
 
     }, [selectedUser, userId])
 
-    const messages = [
-        {
-            id: 1,
-            sender: "receiver",
-            text: "Htoday?",
-            time: "2:35 PM",
-            avatar: "https://i.pravatar.cc/150?img=32",
-            name: "Caroline Gray",
-        },
-        {
-            id: 2,
-            sender: "sender",
-            text: "I’m doing gre.",
-            time: "2:36 PM",
-            avatar: "https://i.pravatar.cc/150?img=12",
-            name: "You",
-        },
-        {
-            id: 3,
-            sender: "receiver",
-            text: "Nice! That design looks really modern and clean.",
-            time: "2:38 PM",
-            avatar: "https://i.pravatar.cc/150?img=32",
-            name: "Caroline Gray",
-        },
-        {
-            id: 4,
-            sender: "sender",
-            text: "Yes! I’m trying to make it exactly like the image using React components.",
-            time: "2:40 PM",
-            avatar: "https://i.pravatar.cc/150?img=12",
-            name: "You",
-        },
-        {
-            id: 5,
-            sender: "receiver",
-            text: "Awesome. Don’t forget the sidebar search and user list section.",
-            time: "2:42 PM",
-            avatar: "https://i.pravatar.cc/150?img=32",
-            name: "Caroline Gray",
-        },
-        {
-            id: 6,
-            sender: "sender",
-            text: "Already done 😄 Next I’m building the center chat area.",
-            time: "2:45 PM",
-            avatar: "https://i.pravatar.cc/150?img=12",
-            name: "You",
-        },
-        {
-            id: 7,
-            sender: "receiver",
-            text: "Perfect! Also add the right-side profile card and media section.",
-            time: "2:47 PM",
-            avatar: "https://i.pravatar.cc/150?img=32",
-            name: "Caroline Gray",
-        },
-        {
-            id: 8,
-            sender: "sender",
-            text: "Sure 🔥 I’ll make the full layout responsive too.",
-            time: "2:49 PM",
-            avatar: "https://i.pravatar.cc/150?img=12",
-            name: "You",
-        },
-        {
-            id: 9,
-            sender: "receiver",
-            text: "That’s awesome. Send me the final code once it’s ready.",
-            time: "2:51 PM",
-            avatar: "https://i.pravatar.cc/150?img=32",
-            name: "Caroline Gray",
-        },
-        {
-            id: 10,
-            sender: "sender",
-            text: "Done deal 😎 I’ll send the complete React components next.",
-            time: "2:53 PM",
-            avatar: "https://i.pravatar.cc/150?img=12",
-            name: "You",
-        },
-    ];
 
-    const [message, setMessage] = useState("");
-
-    const handleSend = () => {
+    const handleSend = async () => {
         if (!message.trim()) return;
 
         console.log("Sent Message:", message);
         setMessage("");
+        const response = await axios.post(
+            `${BACKENDURL}/api/message/sent/${chatUser._id}`, {
+            message: message,
+            messageType: messageType
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+        )
+        if(response.data.status){
+            setMessages(prev=>{
+                return [...prev,response.data.data]
+            })
+        }
+        console.log(response.data);
+
     };
 
     return (
@@ -120,7 +88,7 @@ function ChatBox({ selectedUser }) {
                 chatUser && <div className="ChatUser">
                     <div className="Profile-details">
                         <img src={chatUser.avatar} alt="" srcset="" />
-                        <h5><strong>{chatUser.name}</strong></h5>
+                        <h5><strong>{chatUser.userName}</strong></h5>
                     </div>
                     <div className="Icon">
                         {
@@ -132,25 +100,41 @@ function ChatBox({ selectedUser }) {
                 </div>
             }
             <div className="MessageBox">
-                {messages.map((msg) => (
+                {messages && messages.map((msg,i) => (
                     <div
-                        key={msg.id}
-                        className={`message-row ${msg.sender === "sender" ? "sender-row" : "receiver-row"}`}
+                        key={msg._id}
+                        className={`message-row ${msg.senderId._id !== chatUser._id? "sender-row" : "receiver-row"}`}
                     >
-                        {msg.sender === "receiver" && (
-                            <img src={msg.avatar} alt={msg.name} className="chat-avatar" />
+                        {
+                        // messages[messages.length==i+1?i:i+1].senderId._id!=chatUser._id &&
+                        msg.senderId._id === chatUser._id && (
+                           <img src={
+                                msg.senderId.profileImage!=""?
+                                msg.senderId.profileImage:
+                                'https://i.pinimg.com/1200x/6e/59/95/6e599501252c23bcf02658617b29c894.jpg'
+                            } alt={msg.userName} className="chat-avatar" />
                         )}
 
                         <div>
-                            <div className={`message-bubble ${msg.sender}`}>
-                                <p>{msg.text}</p>
+                            <div className={`message-bubble ${msg.senderId._id !== chatUser._id?
+                                'sender':
+                                'receiver'}`}>
+                                <p>{msg.message}</p>
                             </div>
 
                             {/* <span style={{color:'wheat',fontSize:'13px' }} className='text-end'>{msg.time}</span> */}
 
                         </div>
-                        {msg.sender === "sender" && (
-                            <img src={msg.avatar} alt={msg.name} className="chat-avatar" />
+                        {
+                        
+                        // messages[messages.length==i+1?i:i+1].senderId._id===chatUser._id &&
+                        msg.senderId._id !== chatUser._id && (
+
+                            <img src={
+                                msg.receiverId.profileImage!=""?
+                                msg.receiverId.profileImage:
+                                'https://i.pinimg.com/1200x/6e/59/95/6e599501252c23bcf02658617b29c894.jpg'
+                            } alt={msg.userName} className="chat-avatar" />
                         )}
                     </div>
                 ))}

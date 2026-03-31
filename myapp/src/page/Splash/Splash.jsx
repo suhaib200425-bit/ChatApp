@@ -11,6 +11,8 @@ function Splash() {
   useEffect(() => {
     async function getUser() {
       const token = localStorage.getItem('token')
+      console.log(token);
+      
       const response = await axios.get(`${BACKENDURL}/api/user/check-loged`, {
         headers: {
           Authorization: `Bearer ${token}`

@@ -1,11 +1,66 @@
-import React from 'react'
+import React, { useState } from 'react'
 import './UsersList.css'
 import { useNavigate } from 'react-router-dom';
-import { users } from '../../assets/assets';
+import { BACKENDURL, users } from '../../assets/assets';
+import axios from 'axios';
+import { useChatContext } from '../../context/ChatContext';
+import { useEffect } from 'react';
 
-function UsersList({ setClickedUser, selectedUser, setSelectedUser }) {
+function UsersList({ setClickedUser, selectedUser }) {
     const Navigate = useNavigate()
-    
+    const [users, setUsers] = useState([])
+    const { setSelectedUser } = useChatContext()
+    const token = localStorage.getItem('token')
+    useEffect(() => {
+        async function getmessageUser() {
+            const response = await axios.get(
+                `${BACKENDURL}/api/message/users`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                        }
+                }
+            )
+            console.log(response.data);
+            if(response.data.status){
+                setUsers(response.data.users)
+            }
+        }
+        getmessageUser()
+    }, [])
+
+
+    async function searchUser(e) {
+        const value = e.target.value
+        if (value) {
+
+            console.log(value)
+            const token = localStorage.getItem('token')
+            const response = await axios.get(`${BACKENDURL}/api/user/search-user?query=${value}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            console.log(response.data);
+            if (response.data.status) {
+                setUsers(response.data.users)
+            }
+        }
+    }
+
+    const GetUser = async (id) => {
+        const token = localStorage.getItem('token')
+        const response = await axios.get(`${BACKENDURL}/api/user/profile/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+        console.log(response.data);
+
+        if (response.data.status) {
+            setSelectedUser(response.data.user)
+        }
+    }
+
     return (
         <div className="sidebar">
             <div className="sidebar-header">
@@ -14,7 +69,7 @@ function UsersList({ setClickedUser, selectedUser, setSelectedUser }) {
             </div>
 
             <div className="search-box">
-                <input type="text" placeholder="Search here..." />
+                <input onChange={searchUser} type="text" placeholder="Search here..." />
             </div>
 
             <div className="user-list">
@@ -28,7 +83,7 @@ function UsersList({ setClickedUser, selectedUser, setSelectedUser }) {
                                 setSelectedUser({})
 
                             } else {
-                                setSelectedUser(user)
+                                GetUser(user._id)
                                 console.log(user);
                                 setClickedUser(true)
                             }
@@ -41,11 +96,15 @@ function UsersList({ setClickedUser, selectedUser, setSelectedUser }) {
                         className={`user-item ${(selectedUser != {} && selectedUser._id == user._id) ? "active-user" : ""}`}
                     >
                         <div className="user-left">
-                            <img src={user.avatar} alt={user.name} className="avatar" />
+                            <img src={user.profileImage != '' ? user.profileImage : 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?cs=srgb&dl=pexels-pixabay-220453.jpg&fm=jpg'} alt={user.userName} className="avatar" />
                             <div className="user-info">
-                                <h4>{user.name}</h4>
+                                <h4>
+                                    <font size='3' face="Arial" >
+                                        {user.userName}
+                                    </font>
+                                </h4>
                                 <p className={user.status === "Online" ? "online" : "offline"}>
-                                    {user.status}
+                                    {user.lastMessage}
                                 </p>
                             </div>
                         </div>

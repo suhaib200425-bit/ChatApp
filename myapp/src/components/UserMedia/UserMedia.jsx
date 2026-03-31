@@ -13,13 +13,12 @@ const UserMedia = ({ selectedUser }) => {
 
   const [mediaUser, setMediaUser] = useState({})
   const { userId } = useParams()
-  const {setUser} =useChatContext()
-  const  Navigate= useNavigate()
+  const { setUser } = useChatContext()
+  const Navigate = useNavigate()
   useEffect(() => {
-          console.log('userId'+userId);
+    console.log('userId' + userId);
     const user = users.filter(user => user._id == userId)
-    console.log(user);
-    
+
     if (userId) {
       setMediaUser(user)
     } else {
@@ -32,7 +31,7 @@ const UserMedia = ({ selectedUser }) => {
       <div className="profile-section">
         <img
           src={mediaUser && mediaUser.avatar}
-          alt={mediaUser && mediaUser.name}
+          alt={mediaUser && mediaUser.userName}
           className="profile-image"
         />
 
@@ -57,11 +56,11 @@ const UserMedia = ({ selectedUser }) => {
       </div>
 
       <button className="logout-btn"
-      onClick={()=>{
-        localStorage.setItem('token',0)
-        setUser({})
-        Navigate('/auth')
-      }}>Logout</button>
+        onClick={() => {
+          localStorage.setItem('token', 0)
+          setUser({})
+          Navigate('/auth')
+        }}>Logout</button>
     </div>
   );
 };

@@ -44,7 +44,7 @@ const UserMedia = ({ selectedUser }) => {
         </div>
 
         <p className="profile-desc">
-          Lorem ipsum is placeholder text commonly used in...
+          {mediaUser&&mediaUser.bio}
         </p>
       </div>
 

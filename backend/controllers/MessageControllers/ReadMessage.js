@@ -25,7 +25,7 @@ const getChatMessages = async (req, res) => {
         { senderId: userId, receiverId: myId }
       ]
     })
-      .sort({ createdAt: 1 }) // latest first
+      .sort({ createdAt: -1 }) // latest first
       .skip((page - 1) * limit)
       .limit(limit)
       .populate("senderId receiverId", "userName profileImage");
@@ -43,7 +43,7 @@ const getChatMessages = async (req, res) => {
       page,
       totalPages: Math.ceil(total / limit),
       totalMessages: total,
-      messages
+      messages:messages.reverse()
     });
 
   } catch (error) {

@@ -4,16 +4,20 @@ const Message = require("../../models/message");
 const sendMessage = async (req, res) => {
     try {
         const { message, messageType } = req.body;
-        if (!message) {
+        console.log(message);
+        
+        if (!req.file &&!message) {
             return res.json({
                 status: false,
                 message: "Message Is Required"
             })
         }
         if (!messageType) {
+            
             return res.json({
                 status: false,
                 message: "Message Type Is Required"
+
             })
         }
         const senderId = req.user.userId
@@ -21,7 +25,7 @@ const sendMessage = async (req, res) => {
         const newMessage = new Message({
             senderId,
             receiverId,
-            message,
+            message:req.file?req.file.secure_url:message,
             messageType: messageType || "text",
         });
 

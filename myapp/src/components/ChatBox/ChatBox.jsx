@@ -9,6 +9,8 @@ import { useChatContext } from '../../context/ChatContext';
 import axios from 'axios';
 function ChatBox() {
     const ScrollRef = useRef(null)
+    const messageRef = useRef(null)
+    const ImageRef = useRef(null)
     const [chatUser, setChatUser] = useState({})
     const [messageType, setMessageType] = useState('text')
     const [messages, setMessages] = useState([])
@@ -45,6 +47,7 @@ function ChatBox() {
                 if (response.data.status) {
                     // setChatUser(response.data.user)
                     setMessages(response.data.messages)
+                    messageRef.current.focus()
                 }
             }
         }
@@ -65,32 +68,47 @@ function ChatBox() {
 
     }, [selectedUser, userId])
 
-    useEffect(()=>{
+    useEffect(() => {
         ScrollRef.current.scrollTop = ScrollRef.current.scrollHeight;
-    },[messages.length])
+    }, [messages.length])
 
-    const handleSend = async () => {
-        if (!message.trim()) return;
+    const handleSend = async (file,type) => {
+        // if (!message.trim()) return;
 
         console.log("Sent Message:", message);
-        setMessage("");
+        const formdata = new FormData()
+        formdata.append("message", file?file:message)
+        formdata.append("messageType", type?type:messageType)
+        console.log(formdata);
+
+        const data=file?formdata:{
+            message,
+            messageType
+        }
+        
         const response = await axios.post(
-            `${BACKENDURL}/api/message/sent/${chatUser._id}`, {
-            message: message,
-            messageType: messageType
-        }, {
+            `${BACKENDURL}/api/message/sent/${chatUser._id}`,
+            data, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
+
         }
         )
         if (response.data.status) {
+            setMessage("");
             setMessages(prev => {
                 return [...prev, response.data.data]
             })
         }
         console.log(response.data);
 
+    };
+
+    const handleImageChange = (e) => {
+        setMessage(e.target.files[0]);
+        setMessageType('image')
+        handleSend(e.target.files[0],'image')
     };
 
     return (
@@ -158,6 +176,7 @@ function ChatBox() {
             <div className="chat-input-wrapper">
                 <div className="chat-input-box">
                     <input
+                        ref={messageRef}
                         type="text"
                         placeholder="Send a message"
                         value={message}
@@ -165,17 +184,23 @@ function ChatBox() {
                     />
 
                     <button className="image-btn">
-                        <FiImage />
+                        <input ref={ImageRef} type="file" accept="image/*" hidden onChange={handleImageChange}></input>
+                        <FiImage onClick={() => {
+                            ImageRef.current.click()
+                        }} />
                     </button>
                 </div>
 
-                <button className="send-btn" onClick={handleSend}>
+                <button className="send-btn" onClick={()=>handleSend(
+                    
+                )}>
                     <FiSend />
                 </button>
             </div>
 
         </div>
     )
+
 }
 
 export default ChatBox

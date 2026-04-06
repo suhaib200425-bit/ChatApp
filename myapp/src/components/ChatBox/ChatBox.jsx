@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { FiImage, FiSend } from "react-icons/fi";
 import { FaEdit } from "react-icons/fa";
 import './ChatBox.css'
@@ -8,16 +8,18 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useChatContext } from '../../context/ChatContext';
 import axios from 'axios';
 function ChatBox() {
+    const ScrollRef = useRef(null)
     const [chatUser, setChatUser] = useState({})
     const [messageType, setMessageType] = useState('text')
     const [messages, setMessages] = useState([])
     const [message, setMessage] = useState("")
     const { userId } = useParams()
-    const { selectedUser } = useChatContext()
+    const { selectedUser, user } = useChatContext()
 
     const Navigate = useNavigate()
     const token = localStorage.getItem('token')
     useEffect(() => {
+
         const getProfile = async () => {
             const response = await axios.get(`${BACKENDURL}/api/user/profile/${userId}`, {
                 headers: {
@@ -53,10 +55,19 @@ function ChatBox() {
         if (selectedUser != {}) {
             setChatUser(selectedUser)
             getMessage(selectedUser._id)
+            console.log(ScrollRef.current.scrollTop);
+
+        }
+
+        return () => {
+            setMessages([])
         }
 
     }, [selectedUser, userId])
 
+    useEffect(()=>{
+        ScrollRef.current.scrollTop = ScrollRef.current.scrollHeight;
+    },[messages.length])
 
     const handleSend = async () => {
         if (!message.trim()) return;
@@ -73,9 +84,9 @@ function ChatBox() {
             }
         }
         )
-        if(response.data.status){
-            setMessages(prev=>{
-                return [...prev,response.data.data]
+        if (response.data.status) {
+            setMessages(prev => {
+                return [...prev, response.data.data]
             })
         }
         console.log(response.data);
@@ -87,11 +98,16 @@ function ChatBox() {
             {
                 chatUser && <div className="ChatUser">
                     <div className="Profile-details">
-                        <img src={chatUser.avatar} alt="" srcset="" />
+                        <img src={
+                            chatUser.profileImage != "" ?
+                                chatUser.profileImage :
+                                'https://i.pinimg.com/1200x/6e/59/95/6e599501252c23bcf02658617b29c894.jpg'
+                        } alt="" srcset="" />
                         <h5><strong>{chatUser.userName}</strong></h5>
                     </div>
                     <div className="Icon">
                         {
+                            user._id == chatUser._id &&
                             <FaEdit onClick={() => {
                                 Navigate('/edit')
                             }} />
@@ -99,25 +115,25 @@ function ChatBox() {
                     </div>
                 </div>
             }
-            <div className="MessageBox">
-                {messages && messages.map((msg,i) => (
+            <div className="MessageBox" ref={ScrollRef}>
+                {messages && messages.map((msg, i) => (
                     <div
                         key={msg._id}
-                        className={`message-row ${msg.senderId._id !== chatUser._id? "sender-row" : "receiver-row"}`}
+                        className={`message-row ${msg.senderId._id !== chatUser._id ? "sender-row" : "receiver-row"}`}
                     >
                         {
-                        // messages[messages.length==i+1?i:i+1].senderId._id!=chatUser._id &&
-                        msg.senderId._id === chatUser._id && (
-                           <img src={
-                                msg.senderId.profileImage!=""?
-                                msg.senderId.profileImage:
-                                'https://i.pinimg.com/1200x/6e/59/95/6e599501252c23bcf02658617b29c894.jpg'
-                            } alt={msg.userName} className="chat-avatar" />
-                        )}
+                            // messages[messages.length==i+1?i:i+1].senderId._id!=chatUser._id &&
+                            msg.senderId._id === chatUser._id && (
+                                <img src={
+                                    msg.senderId.profileImage != "" ?
+                                        msg.senderId.profileImage :
+                                        'https://i.pinimg.com/1200x/6e/59/95/6e599501252c23bcf02658617b29c894.jpg'
+                                } alt={msg.userName} className="chat-avatar" />
+                            )}
 
                         <div>
-                            <div className={`message-bubble ${msg.senderId._id !== chatUser._id?
-                                'sender':
+                            <div className={`message-bubble ${msg.senderId._id !== chatUser._id ?
+                                'sender' :
                                 'receiver'}`}>
                                 <p>{msg.message}</p>
                             </div>
@@ -126,16 +142,16 @@ function ChatBox() {
 
                         </div>
                         {
-                        
-                        // messages[messages.length==i+1?i:i+1].senderId._id===chatUser._id &&
-                        msg.senderId._id !== chatUser._id && (
 
-                            <img src={
-                                msg.receiverId.profileImage!=""?
-                                msg.receiverId.profileImage:
-                                'https://i.pinimg.com/1200x/6e/59/95/6e599501252c23bcf02658617b29c894.jpg'
-                            } alt={msg.userName} className="chat-avatar" />
-                        )}
+                            // messages[messages.length==i+1?i:i+1].senderId._id===chatUser._id &&
+                            msg.senderId._id !== chatUser._id && (
+
+                                <img src={
+                                    msg.senderId.profileImage != "" ?
+                                        msg.senderId.profileImage :
+                                        'https://i.pinimg.com/1200x/6e/59/95/6e599501252c23bcf02658617b29c894.jpg'
+                                } alt={msg.userName} className="chat-avatar" />
+                            )}
                     </div>
                 ))}
             </div>

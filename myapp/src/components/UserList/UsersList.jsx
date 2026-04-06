@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import './UsersList.css'
 import { useNavigate } from 'react-router-dom';
-import { BACKENDURL, users } from '../../assets/assets';
+import { BACKENDURL } from '../../assets/assets';
 import axios from 'axios';
 import { useChatContext } from '../../context/ChatContext';
 import { useEffect } from 'react';
@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 function UsersList({ setClickedUser, selectedUser }) {
     const Navigate = useNavigate()
     const [users, setUsers] = useState([])
+    const {user}=useChatContext()
     const { setSelectedUser } = useChatContext()
     const token = localStorage.getItem('token')
     useEffect(() => {
@@ -22,7 +23,7 @@ function UsersList({ setClickedUser, selectedUser }) {
             )
             console.log(response.data);
             if(response.data.status){
-                setUsers(response.data.users)
+                setUsers([user,...response.data.users])
             }
         }
         getmessageUser()

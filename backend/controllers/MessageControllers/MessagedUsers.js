@@ -8,6 +8,9 @@ const getMyChatUsers = async (req, res) => {
     const users = await Message.aggregate([
       {
         $match: {
+          $expr: {
+            $ne: ["$senderId", "$receiverId"]
+          },
           $or: [
             { senderId: myId },
             { receiverId: myId }
@@ -75,7 +78,7 @@ const getMyChatUsers = async (req, res) => {
     res.json({
       status: false,
       message: "Failed to fetch chat users",
-      error:error.message
+      error: error.message
     });
   }
 };

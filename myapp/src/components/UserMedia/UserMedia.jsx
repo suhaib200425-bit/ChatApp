@@ -30,14 +30,17 @@ const UserMedia = ({ selectedUser }) => {
     <div className="right-panel">
       <div className="profile-section">
         <img
-          src={mediaUser && mediaUser.avatar}
+          src={mediaUser && mediaUser.profileImage?
+            mediaUser.profileImage:
+            'https://i.pinimg.com/1200x/6e/59/95/6e599501252c23bcf02658617b29c894.jpg'
+          }
           alt={mediaUser && mediaUser.userName}
           className="profile-image"
         />
 
         <div className="profile-name-row">
           <span className="online-dot"></span>
-          <h3>{mediaUser && mediaUser.name}</h3>
+          <h3>{mediaUser && mediaUser.userName}</h3>
         </div>
 
         <p className="profile-desc">

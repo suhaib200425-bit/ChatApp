@@ -37,7 +37,8 @@ const getMyChatUsers = async (req, res) => {
         $group: {
           _id: "$otherUser",
           lastMessage: { $first: "$message" },
-          lastMessageTime: { $first: "$createdAt" }
+          lastMessageTime: { $first: "$createdAt" },
+          lastMessageType: { $first: "$messageType" }
         }
       },
       {
@@ -61,7 +62,8 @@ const getMyChatUsers = async (req, res) => {
               "$user",
               {
                 lastMessage: "$lastMessage",
-                lastMessageTime: "$lastMessageTime"
+                lastMessageTime: "$lastMessageTime",
+                lastMessageType: "$lastMessageType"
               }
             ]
           }

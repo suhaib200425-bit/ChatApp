@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import "./UserMedia.css";
-import { users } from "../../assets/assets";
+import { BACKENDURL, users } from "../../assets/assets";
 import { useNavigate, useParams } from "react-router-dom";
 import { useChatContext } from "../../context/ChatContext";
+import axios from "axios";
 
 const mediaImages = [
   "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300&auto=format&fit=crop&q=60",
@@ -13,14 +14,26 @@ const UserMedia = ({ selectedUser }) => {
 
   const [mediaUser, setMediaUser] = useState({})
   const { userId } = useParams()
-  const { setUser } = useChatContext()
+  const { setUser,user } = useChatContext()
+  const token=localStorage.getItem('token')
   const Navigate = useNavigate()
   useEffect(() => {
-    console.log('userId' + userId);
-    const user = users.filter(user => user._id == userId)
-
+    console.log("USRID");
+    console.log(userId);
+    
+    
+    const getProfile = async () => {
+      const response = await axios.get(`${BACKENDURL}/api/user/profile/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      if (response.data.status) {
+        setMediaUser(response.data.user)
+      }
+    }
     if (userId) {
-      setMediaUser(user)
+      getProfile()
     } else {
       setMediaUser(selectedUser)
     }
@@ -30,8 +43,8 @@ const UserMedia = ({ selectedUser }) => {
     <div className="right-panel">
       <div className="profile-section">
         <img
-          src={mediaUser && mediaUser.profileImage?
-            mediaUser.profileImage:
+          src={mediaUser && mediaUser.profileImage ?
+            mediaUser.profileImage :
             'https://i.pinimg.com/1200x/6e/59/95/6e599501252c23bcf02658617b29c894.jpg'
           }
           alt={mediaUser && mediaUser.userName}
@@ -44,7 +57,7 @@ const UserMedia = ({ selectedUser }) => {
         </div>
 
         <p className="profile-desc">
-          {mediaUser&&mediaUser.bio}
+          {mediaUser && mediaUser.bio}
         </p>
       </div>
 
@@ -58,12 +71,14 @@ const UserMedia = ({ selectedUser }) => {
         </div>
       </div>
 
+{
+mediaUser._id==user._id&&
       <button className="logout-btn"
         onClick={() => {
           localStorage.setItem('token', 0)
           setUser({})
           Navigate('/auth')
-        }}>Logout</button>
+        }}>Logout</button>}
     </div>
   );
 };

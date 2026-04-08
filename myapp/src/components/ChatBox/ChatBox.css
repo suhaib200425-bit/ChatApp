@@ -43,10 +43,13 @@
   display: flex;
   scrollbar-width: thin;
   flex-direction: column;
-  gap: 10px;
+  /* gap: 10px; */
 
 }
 
+.Profile-details .bachbtn{
+  display: none;
+}
 .sender-row {
   display: flex;
   align-items: end;
@@ -76,7 +79,7 @@
 }
 
 .message-bubble {
-  padding: 10px 20px;
+  /* padding: 10px 20px; */
   border-radius: 10px;
   max-width: 300px;
   color: white;
@@ -163,7 +166,11 @@
   box-shadow: 0 8px 18px rgba(139, 92, 246, 0.35);
   font-size: 18px;
 }
-
+.sender img,
+.receiver img{
+  border-radius: 10px;
+  height: 150px;
+}
 .send-btn:hover {
   transform: scale(1.05);
 }
@@ -174,7 +181,9 @@
     width: 100%;
     padding: 5px;
   }
-
+.Profile-details .bachbtn{
+  display: block;
+}
   .chat-avatar {
     min-width: 30px;
     max-width: 30px;

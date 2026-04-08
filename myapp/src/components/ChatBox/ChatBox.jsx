@@ -72,20 +72,20 @@ function ChatBox() {
         ScrollRef.current.scrollTop = ScrollRef.current.scrollHeight;
     }, [messages.length])
 
-    const handleSend = async (file,type) => {
+    const handleSend = async (file, type) => {
         // if (!message.trim()) return;
 
         console.log("Sent Message:", message);
         const formdata = new FormData()
-        formdata.append("message", file?file:message)
-        formdata.append("messageType", type?type:messageType)
+        formdata.append("message", file ? file : message)
+        formdata.append("messageType", type ? type : messageType)
         console.log(formdata);
 
-        const data=file?formdata:{
+        const data = file ? formdata : {
             message,
             messageType
         }
-        
+
         const response = await axios.post(
             `${BACKENDURL}/api/message/sent/${chatUser._id}`,
             data, {
@@ -108,14 +108,25 @@ function ChatBox() {
     const handleImageChange = (e) => {
         setMessage(e.target.files[0]);
         setMessageType('image')
-        handleSend(e.target.files[0],'image')
+        handleSend(e.target.files[0], 'image')
     };
 
     return (
         <div className='ChatBox ms-2'>
             {
-                chatUser && <div className="ChatUser">
+                chatUser && <div className="ChatUser" onClick={() => {
+                    if (window.matchMedia("(max-width: 576px)").matches) {
+                        Navigate(`/home/media/${chatUser._id}`)
+                    }
+                }}>
                     <div className="Profile-details">
+                        <svg className='bachbtn' xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-left-circle-fill" viewBox="0 0 16 16"
+                        onClick={(e)=>{
+e.stopPropagation()
+Navigate(-1)
+                        }}>
+                            <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z" />
+                        </svg>
                         <img src={
                             chatUser.profileImage != "" ?
                                 chatUser.profileImage :
@@ -137,7 +148,7 @@ function ChatBox() {
                 {messages && messages.map((msg, i) => (
                     <div
                         key={msg._id}
-                        className={`message-row ${msg.senderId._id !== chatUser._id ? "sender-row" : "receiver-row"}`}
+                        className={`m-1 message-row ${msg.senderId._id !== chatUser._id ? "sender-row" : "receiver-row"}`}
                     >
                         {
                             // messages[messages.length==i+1?i:i+1].senderId._id!=chatUser._id &&
@@ -153,7 +164,11 @@ function ChatBox() {
                             <div className={`message-bubble ${msg.senderId._id !== chatUser._id ?
                                 'sender' :
                                 'receiver'}`}>
-                                <p>{msg.message}</p>
+                                {
+                                    msg.messageType == 'text' ?
+                                        <p className='p-3 '>{msg.message}</p> :
+                                        <img src={msg.message} alt="" srcset="" />
+                                }
                             </div>
 
                             {/* <span style={{color:'wheat',fontSize:'13px' }} className='text-end'>{msg.time}</span> */}
@@ -180,7 +195,10 @@ function ChatBox() {
                         type="text"
                         placeholder="Send a message"
                         value={message}
-                        onChange={(e) => setMessage(e.target.value)}
+                        onChange={(e) => {
+                            setMessage(e.target.value)
+                            setMessageType('text')
+                        }}
                     />
 
                     <button className="image-btn">
@@ -191,8 +209,8 @@ function ChatBox() {
                     </button>
                 </div>
 
-                <button className="send-btn" onClick={()=>handleSend(
-                    
+                <button className="send-btn" onClick={() => handleSend(
+
                 )}>
                     <FiSend />
                 </button>
